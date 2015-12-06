@@ -1,5 +1,7 @@
 # Xcode
 #
+unladen.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+.DS_Store
 build/
 *.pbxuser
 !default.pbxuser
