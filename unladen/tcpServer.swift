@@ -6,7 +6,7 @@ class TcpServer {
     
     let maxNumberOfConnectionsBeforeAccept = Int32(1000)
     let condition = NSCondition()
-    
+    var port:Int
     
     /// Replacement for FD_ZERO macro
     
@@ -217,11 +217,11 @@ class TcpServer {
         }
         
         // Print a list of the found IP addresses
-        for (var info = servinfo; info != nil; info = info.memory.ai_next) {
-            let (clientIp, service) = sockaddrDescription(info.memory.ai_addr)
-            let message = "HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?")
-            print(message)
-        }
+//        for (var info = servinfo; info != nil; info = info.memory.ai_next) {
+//            let (clientIp, service) = sockaddrDescription(info.memory.ai_addr)
+//            let message = "HostIp: " + (clientIp ?? "?") + " at port: " + (service ?? "?")
+//            print(message)
+//        }
         
         // ============================
         // Create the socket descriptor
@@ -232,7 +232,7 @@ class TcpServer {
             servinfo.memory.ai_socktype,    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
             servinfo.memory.ai_protocol)    // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
         
-        print("Socket value: \(socketDescriptor)")
+//        print("Socket value: \(socketDescriptor)")
         
         
         if socketDescriptor == -1 {
@@ -458,13 +458,17 @@ class TcpServer {
         close(socket)
     }
     
-    func serveOnPort(port:Int) {
+    init(port:Int) {
+        self.port = port
+    }
+    
+    func serve() {
         
         // =================================================
         // Initialize the port on which we will be listening
         // =================================================
         
-        let httpSocketDescriptor = initServerSocket(port)
+        let httpSocketDescriptor = initServerSocket(self.port)
         if httpSocketDescriptor == nil {
             exit(-1)
         }

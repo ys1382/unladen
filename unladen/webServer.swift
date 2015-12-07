@@ -1,9 +1,16 @@
 import Foundation
 
+extension String {
+    func data() -> NSData? {
+        return self.dataUsingEncoding(NSUTF8StringEncoding)
+    }
+}
+
 class WebServer : TcpServer {
 
-    typealias Handler = ([String:String]?) -> (String)
+    typealias Handler = ([String:String]?) -> (NSData)
     var routes = [String:[String:Handler]]()
+    var directory:String
     static let GET = "GET"
     static let POST = "POST"
     
@@ -15,7 +22,9 @@ class WebServer : TcpServer {
         self.setRoute(WebServer.POST, route:route, handler:handler)
     }
     
-    override init() {
+    init(port:Int, directory:String=".") {
+        self.directory = directory
+        super.init(port:port)
         self.routes[WebServer.GET] = [String:Handler]()
         self.routes[WebServer.POST] = [String:Handler]()
     }
@@ -38,7 +47,7 @@ class WebServer : TcpServer {
 
             case WebServer.GET:
                 if let q = request.rangeOfString("?")?.startIndex.advancedBy(1) {
-                    let r = request.substringFromIndex(q    )
+                    let r = request.substringFromIndex(q)
                     let s = r.componentsSeparatedByString(" ")[0]
                     return dictify(s)
                 }
@@ -57,21 +66,37 @@ class WebServer : TcpServer {
     override func processRequest(socket:Int32, data:[Int8], length:Int) {
         let request = NSString(bytes: data, length:length, encoding: NSUTF8StringEncoding)
         let response = handleRoute(request! as String)
-        let array: [UInt8] = Array(response.utf8)
-        send(socket, array, array.count, 0)
+        send(socket, response.bytes, response.length, 0)
         close(socket)
     }
 
-    func handleRoute(request:String) -> String {
+    func handleRoute(request:String) -> NSData {
         let separators = NSCharacterSet(charactersInString: " ,?")
         let components = request.componentsSeparatedByCharactersInSet(separators)
         let method = components[0]
-        let route = components[1]
+        var route = components[1]
         let params = parseParams(method, request:request)
-        var response = ""
+        var response = "".data()
+
         if let handler = self.routes[method]![route] {
             response = handler(params)
+        } else if method == WebServer.GET {
+            let ri = route.startIndex.advancedBy(1)
+            route = route.substringFromIndex(ri)
+            response = NSData(contentsOfFile:route)
+            if response == nil {
+                let message = "404 -- can't find file \(route)".data()!
+                return httpResponse(404, body: message)
+            }
         }
-        return "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: \(response.characters.count)\r\n\r\n\(response)"
+        return httpResponse(200, body:response!)
+    }
+    
+    func httpResponse(status:Int, body:NSData) -> NSData {
+        let type = "\r\nContent-Type: text/html; charset=UTF-8"
+        let length = "\r\nContent-Length: \(body.length)\r\n\r\n"
+        let ok = status == 200 ? "OK" : ""
+        let body2 = NSString(bytes: body.bytes, length:body.length, encoding: NSUTF8StringEncoding)!
+        return "HTTP/1.1 \(status) \(ok)\(type)\(length)\(body2))".data()!
     }
 }
