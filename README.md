@@ -1,5 +1,5 @@
 # unladen
-Pure Swift Web Server
+**Pure Swift Web Server**
 
 Apple invented the Swift programming language for iOS and OSX apps, and it's been well-received by the developer community. But you need a Mac running OSX to use Swift. THEN, on Friday, Apple open-sourced Swift, and the developer community's first reaction was "now we can make servers in Swift and run them in the Cloud," because the Cloud runs Linux. Apple even released a Linux version of the Swift compiler. I thought it might be fun to benchmark a few Swift web servers on Linux, and compare them to other languages' web servers.
 
