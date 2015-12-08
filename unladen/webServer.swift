@@ -69,7 +69,7 @@ class WebServer : TcpServer {
         send(socket, response.bytes, response.length, 0)
         close(socket)
     }
-
+    
     func handleRoute(request:String) -> NSData {
         let separators = NSCharacterSet(charactersInString: " ,?")
         let components = request.componentsSeparatedByCharactersInSet(separators)
@@ -87,16 +87,27 @@ class WebServer : TcpServer {
             if response == nil {
                 let message = "404 -- can't find file \(route)".data()!
                 return httpResponse(404, body: message)
+            } else {
             }
         }
         return httpResponse(200, body:response!)
+    }
+    
+    func printFirstBytes(body:NSData) {
+        let count = body.length / sizeof(UInt8)
+        var array = [UInt8](count: count, repeatedValue: 0)
+        body.getBytes(&array, length:count * sizeof(UInt8))
+        for i in 0...3 {
+            print("\(i): \(Int(array[i]))")
+        }
     }
     
     func httpResponse(status:Int, body:NSData) -> NSData {
         let type = "\r\nContent-Type: text/html; charset=UTF-8"
         let length = "\r\nContent-Length: \(body.length)\r\n\r\n"
         let ok = status == 200 ? "OK" : ""
-        let body2 = NSString(bytes: body.bytes, length:body.length, encoding: NSUTF8StringEncoding)!
-        return "HTTP/1.1 \(status) \(ok)\(type)\(length)\(body2))".data()!
+        let response = NSMutableData(data: "HTTP/1.1 \(status) \(ok)\(type)\(length)".data()!)
+        response.appendData(body)
+        return response
     }
 }
