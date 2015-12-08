@@ -9,7 +9,7 @@ So, with the hubris of any developer-at-heart, I made my own from scratch today.
 
 Run in Xcode (or even on Linux I suppose), and point your browser to 127.0.0.1:1999/foo?a=b and you'll see:
 
-->you requested foo(["a": "b"])<-
+      you requested foo(["a": "b"]) 
 
 Which is kind of neat. But what about performance? Apple claims Swift is "lightning-fast", although independent measurements show mixed results. None of that matters when my ham-fisted coding can make anything slow, and web servers are not bound by CPU but rather I/O , so language performance matters less than server architecture.
 
