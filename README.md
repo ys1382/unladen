@@ -5,7 +5,7 @@ Apple invented the Swift programming language for iOS and OSX apps, and it's bee
 
 But as of this writing, you can't fire up Swift in Heroku, and installing Swift on Linux is a lot more daunting than just summoning apt-get, and although there are several projects that claim to be Swift web servers, I couldn't get a single one to serve up "Hello world". Most wouldn't even compile with the latest Swift v2. At least the prematurely-named "Perfect" ran, but I couldn't for the life of me get it to output "Hello world". Maybe they already had the domain name and figured why not.
 
-So, with the hubris of any developer-at-heart, I made my own from scratch today. It's called "unladen" and available in GitHub here. If you're familiar with the API of Express.js, the popular node.js library, it should look familiar:
+So, with the hubris of any developer-at-heart, I made my own from scratch today. If you're familiar with the API of Express.js, the popular node.js library, it should look familiar:
 
 Run in Xcode (or even on Linux I suppose), and point your browser to 127.0.0.1:1999/foo?a=b and you'll see:
 
