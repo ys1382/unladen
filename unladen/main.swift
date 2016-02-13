@@ -2,7 +2,7 @@ import Foundation
 
 let PORT = 1999
 
-class Example : WebServer {
+class WebExample : WebServer {
     
     init() {
         super.init(port:PORT)
@@ -30,5 +30,15 @@ class Example : WebServer {
     }
 }
 
-let example = Example()
-example.serve()
+//class UdpExample : UdpServer {
+//    
+//    init() {
+//        super.init(port: PORT)
+//    }
+//}
+
+let web = WebExample()
+web.serve()
+
+//let udp = UdpExample()
+//udp.serve()

@@ -175,9 +175,7 @@ class IpServer {
     func initServerSocket() -> Int32? {
         
         // General purpose status variable, used to detect error returns from socket functions
-        
         var status: Int32 = 0
-        
         
         // ==================================================================
         // Retrieve the information necessary to create the socket descriptor
@@ -188,7 +186,7 @@ class IpServer {
         var hints = addrinfo(
             ai_flags: AI_PASSIVE,       // Assign the address of the local host to the socket structures
             ai_family: AF_UNSPEC,       // Either IPv4 or IPv6
-            ai_socktype: sockType,   // TCP
+            ai_socktype: sockType,      // SOCK_STREAM or SOCK_DGRAM
             ai_protocol: 0,
             ai_addrlen: 0,
             ai_canonname: nil,
@@ -285,13 +283,6 @@ class IpServer {
         }
         
         
-        // ===============================
-        // Don't need the servinfo anymore
-        // ===============================
-        
-        freeaddrinfo(servinfo)
-        
-        
         // ========================================
         // Start listening for incoming connections
         // ========================================
@@ -307,9 +298,16 @@ class IpServer {
             close(socketDescriptor)         // Ignore possible errors
             return nil
         }
+
+        // ===============================
+        // Don't need the servinfo anymore
+        // ===============================
+        
+        freeaddrinfo(servinfo)
         
         return socketDescriptor
     }
+    
     
     func acceptConnectionRequests(socketDescriptor:Int32) {
         
@@ -490,13 +488,8 @@ class IpServer {
 }
 
 class TcpServer : IpServer {
+
     init(port:Int) {
         super.init(port: port, sockType: SOCK_STREAM)
-    }
-}
-
-class UdpServer : IpServer {
-    init(port:Int) {
-        super.init(port: port, sockType: SOCK_DGRAM)
     }
 }
