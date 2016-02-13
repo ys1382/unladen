@@ -2,11 +2,12 @@
 
 import Foundation
 
-class TcpServer {
-    
+class IpServer {
+
     let maxNumberOfConnectionsBeforeAccept = Int32(1000)
     let condition = NSCondition()
     var port:Int
+    var sockType:Int32
     
     /// Replacement for FD_ZERO macro
     
@@ -171,8 +172,7 @@ class TcpServer {
         
     }
     
-    
-    func initServerSocket(servicePortNumber:Int) -> Int32? {
+    func initServerSocket() -> Int32? {
         
         // General purpose status variable, used to detect error returns from socket functions
         
@@ -188,7 +188,7 @@ class TcpServer {
         var hints = addrinfo(
             ai_flags: AI_PASSIVE,       // Assign the address of the local host to the socket structures
             ai_family: AF_UNSPEC,       // Either IPv4 or IPv6
-            ai_socktype: SOCK_STREAM,   // TCP
+            ai_socktype: sockType,   // TCP
             ai_protocol: 0,
             ai_addrlen: 0,
             ai_canonname: nil,
@@ -205,7 +205,7 @@ class TcpServer {
         
         status = getaddrinfo(
             nil,                        // Any interface
-            String(servicePortNumber),  // The port on which will be listenend
+            String(self.port),          // The port on which will be listenend
             &hints,                     // Protocol configuration as per above
             &servinfo)                  // The created information
         
@@ -458,8 +458,9 @@ class TcpServer {
         close(socket)
     }
     
-    init(port:Int) {
+    init(port:Int, sockType:Int32) {
         self.port = port
+        self.sockType = sockType
     }
     
     func serve() {
@@ -468,7 +469,7 @@ class TcpServer {
         // Initialize the port on which we will be listening
         // =================================================
         
-        let httpSocketDescriptor = initServerSocket(self.port)
+        let httpSocketDescriptor = initServerSocket()
         if httpSocketDescriptor == nil {
             exit(-1)
         }
@@ -485,5 +486,17 @@ class TcpServer {
         
         condition.lock()
         condition.wait()
+    }
+}
+
+class TcpServer : IpServer {
+    init(port:Int) {
+        super.init(port: port, sockType: SOCK_STREAM)
+    }
+}
+
+class UdpServer : IpServer {
+    init(port:Int) {
+        super.init(port: port, sockType: SOCK_DGRAM)
     }
 }
