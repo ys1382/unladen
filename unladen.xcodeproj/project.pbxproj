@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		706BBA0E1C6F003800BD420B /* udpServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 706BBA0D1C6F003800BD420B /* udpServer.swift */; };
 		707445BD1C143B50002A27ED /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707445B91C143B50002A27ED /* main.swift */; };
 		707445BE1C143B50002A27ED /* ipServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707445BA1C143B50002A27ED /* ipServer.swift */; };
 		707445BF1C143B50002A27ED /* webServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707445BB1C143B50002A27ED /* webServer.swift */; };
@@ -26,7 +25,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		706BBA0D1C6F003800BD420B /* udpServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = udpServer.swift; sourceTree = "<group>"; };
 		707445AE1C143B05002A27ED /* unladen */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = unladen; sourceTree = BUILT_PRODUCTS_DIR; };
 		707445B91C143B50002A27ED /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		707445BA1C143B50002A27ED /* ipServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ipServer.swift; sourceTree = "<group>"; };
@@ -65,7 +63,6 @@
 			children = (
 				707445B91C143B50002A27ED /* main.swift */,
 				707445BA1C143B50002A27ED /* ipServer.swift */,
-				706BBA0D1C6F003800BD420B /* udpServer.swift */,
 				707445BB1C143B50002A27ED /* webServer.swift */,
 			);
 			path = unladen;
@@ -130,7 +127,6 @@
 			files = (
 				707445BE1C143B50002A27ED /* ipServer.swift in Sources */,
 				707445BF1C143B50002A27ED /* webServer.swift in Sources */,
-				706BBA0E1C6F003800BD420B /* udpServer.swift in Sources */,
 				707445BD1C143B50002A27ED /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
