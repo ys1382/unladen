@@ -13,7 +13,7 @@ class WebServer : TcpServer {
     var directory:String
     static let GET = "GET"
     static let POST = "POST"
-    
+
     func get(route:String, handler:Handler) {
         self.setRoute(WebServer.GET, route:route, handler:handler)
     }
@@ -21,14 +21,14 @@ class WebServer : TcpServer {
     func post(route:String, handler:Handler) {
         self.setRoute(WebServer.POST, route:route, handler:handler)
     }
-    
+
     init(port:Int, directory:String=".") {
         self.directory = directory
         super.init(port:port)
         self.routes[WebServer.GET] = [String:Handler]()
         self.routes[WebServer.POST] = [String:Handler]()
     }
-    
+
     func setRoute(method:String, route:String, handler:Handler) {
         self.routes[method]![route] = handler
     }
@@ -41,7 +41,7 @@ class WebServer : TcpServer {
         }
         return response
     }
-    
+
     func parseParams(method:String, request:String) -> [String:String]? {
         switch method {
 
@@ -51,12 +51,12 @@ class WebServer : TcpServer {
                     let s = r.componentsSeparatedByString(" ")[0]
                     return dictify(s)
                 }
-            
+
             case WebServer.POST:
                 let q = request.rangeOfString("\n", options:NSStringCompareOptions.BackwardsSearch)?.startIndex.advancedBy(1)
                 let r = request.substringFromIndex(q!)
                 return dictify(r)
-            
+
             default:
                 print("method \(method) not supported")
         }
@@ -69,7 +69,7 @@ class WebServer : TcpServer {
         send(socket, response.bytes, response.length, 0)
         close(socket)
     }
-    
+
     func handleRoute(request:String) -> NSData {
         let separators = NSCharacterSet(charactersInString: " ,?")
         let components = request.componentsSeparatedByCharactersInSet(separators)
@@ -92,7 +92,7 @@ class WebServer : TcpServer {
         }
         return httpResponse(200, body:response!)
     }
-    
+
     func printFirstBytes(body:NSData) {
         let count = body.length / sizeof(UInt8)
         var array = [UInt8](count: count, repeatedValue: 0)
@@ -101,7 +101,7 @@ class WebServer : TcpServer {
             print("\(i): \(Int(array[i]))")
         }
     }
-    
+
     func httpResponse(status:Int, body:NSData) -> NSData {
         let type = "\r\nContent-Type: text/html; charset=UTF-8"
         let length = "\r\nContent-Length: \(body.length)\r\n\r\n"

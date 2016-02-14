@@ -30,15 +30,17 @@ class WebExample : WebServer {
     }
 }
 
-//class UdpExample : UdpServer {
-//    
-//    init() {
-//        super.init(port: PORT)
-//    }
-//}
+//let web = WebExample()
+//web.serve()
 
-let web = WebExample()
-web.serve()
+class UdpExample : UdpServer {
+    
+    init() {
+        super.init(port: PORT)
+    }
+}
 
-//let udp = UdpExample()
-//udp.serve()
+let udp = UdpExample()
+udp.serve()
+
+
