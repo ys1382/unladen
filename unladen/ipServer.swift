@@ -458,37 +458,41 @@ class IpServer {
 
     func serve() {
 
-        // =================================================
-        // Initialize the port on which we will be listening
-        // =================================================
-
-        let httpSocketDescriptor = initServerSocket()
-        if httpSocketDescriptor == nil {
-            exit(-1)
-        }
-
-        // ===========================================================================
-        // Keep on accepting connection requests until a fatal error or a stop request
-        // ===========================================================================
-
-        let acceptQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
-
-        if self.layer == .TCP {
-            dispatch_async(acceptQueue, {
-                self.acceptConnectionRequests(httpSocketDescriptor!)
-            })
-        } else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
         
-            while true {
-                dispatch_async(acceptQueue, {
-                    self.receiveAndDispatch(httpSocketDescriptor!)
-                })
+            // =================================================
+            // Initialize the port on which we will be listening
+            // =================================================
 
+            let httpSocketDescriptor = self.initServerSocket()
+            if httpSocketDescriptor == nil {
+                exit(-1)
             }
-        }
 
-        condition.lock()
-        condition.wait()
+            // ===========================================================================
+            // Keep on accepting connection requests until a fatal error or a stop request
+            // ===========================================================================
+
+            let acceptQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)
+
+            if self.layer == .TCP {
+                dispatch_async(acceptQueue, {
+                    self.acceptConnectionRequests(httpSocketDescriptor!)
+                })
+            } else {
+            
+                while true {
+                    dispatch_async(acceptQueue, {
+                        self.receiveAndDispatch(httpSocketDescriptor!)
+                    })
+
+                }
+            }
+
+            self.condition.lock()
+            self.condition.wait()
+            
+        })
     }
 }
 
@@ -504,4 +508,10 @@ class UdpServer : IpServer {
     init(port:Int) {
         super.init(port: port, layer:.UDP)
     }
+}
+
+func printlog(line:String) {
+    dispatch_async(dispatch_get_main_queue(), {
+        ViewController.printlog(line)
+    })
 }
