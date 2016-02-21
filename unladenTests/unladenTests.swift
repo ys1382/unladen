@@ -1,13 +1,17 @@
-import Foundation
+import XCTest
+@testable import unladen
+
 import RealmSwift
 
 let PORT = 1999
+
 
 // Define your models like regular Swift classes
 class Dog: Object {
     dynamic var name = ""
     dynamic var age = 0
 }
+
 class Person: Object {
     dynamic var name = ""
     dynamic var picture: NSData? = nil // optionals supported
@@ -43,10 +47,7 @@ class WebExample : WebServer {
         return "you requested bar(\(p))".data()!
     }
 
-
-
     func realm() {
-        
         
         // Use them like regular Swift objects
         let myDog = Dog()
@@ -78,20 +79,38 @@ class WebExample : WebServer {
             }
         }
     }
-
-
-
 }
 
 
-//class UdpExample : UdpServer {
-//    
-//    init() {
-//        super.init(port: PORT)
-//    }
-//}
-//
-//let udp = UdpExample()
-//udp.serve()
-//
-//
+class unladenTests: XCTestCase {
+    
+    override func setUp() {
+        super.setUp()
+    
+        var token: dispatch_once_t = 0
+        func test() {
+            dispatch_once(&token) {
+                let web = WebExample()
+                web.serve()
+            }
+        }
+    }
+    
+    override func tearDown() {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        super.tearDown()
+    }
+    
+    func testExample() {
+        // This is an example of a functional test case.
+        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    }
+    
+    func testPerformanceExample() {
+        // This is an example of a performance test case.
+        self.measureBlock {
+            // Put the code you want to measure the time of here.
+        }
+    }
+    
+}
