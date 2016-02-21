@@ -4,9 +4,6 @@ import Cocoa
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
-
-        let web = WebExample()
-        web.serve()
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
