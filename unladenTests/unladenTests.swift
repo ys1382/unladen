@@ -1,10 +1,15 @@
 import XCTest
 @testable import unladen
 
+import Foundation
 import RealmSwift
 
-let PORT = 1999
-
+let WEB_PORT = UInt16(1999)
+let UDP_PORT = UInt16(2112)
+let SKT_PORT = UInt16(1382)
+let TEST_SERVER_ADDRESS = "127.0.0.1"
+let FOO = "foo"
+let BAR = "bar"
 
 // Define your models like regular Swift classes
 class Dog: Object {
@@ -18,14 +23,27 @@ class Person: Object {
     let dogs = List<Dog>()
 }
 
-class WebExample : WebServer {
+public class WebExample : WebServer {
     
+    static let shared = WebExample()
+
     init() {
-        super.init(port:PORT)
-        self.get("/foo", handler:foo)
-        self.post("/bar", handler:bar)
+        super.init(port:WEB_PORT)
+        self.get("/" + FOO, handler:foo)
+        self.post("/" + BAR, handler:bar)
         
         realm()
+    }
+    
+    // start the server, once, in the background thread
+    static var webOnce : dispatch_once_t = 0
+    override func serve() {
+        dispatch_once(&WebExample.webOnce) {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
+
+                self.serve()
+            })
+        }
     }
     
     func stringIfNil(d:[String:String]?) -> String {
@@ -82,31 +100,113 @@ class WebExample : WebServer {
 }
 
 
-class unladenTests: XCTestCase {
+public class UdpEchoServer : UdpServer {
+    static let shared = UdpEchoServer(port: UDP_PORT)
+
+    // start the server, once, in the background thread
+    static var udpOnce : dispatch_once_t = 0
+    override func serve() {
+        dispatch_once(&UdpEchoServer.udpOnce) {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
+                print("serving");
+                xpector!.fulfill()
+                super.serve()
+            })
+        }
+    }
+
+    override func processRequest(socket:Int32, data:[Int8], length:Int) {
+        print("udp process request");
+        xpector!.fulfill()
+    }
+}
+
+
+public class UdpClient {
+
+
+    class func htons(value: CUnsignedShort) -> CUnsignedShort {
+        return (value << 8) + (value >> 8);
+    }
+
+    class func send(address:String, port:UInt16, message:String) {
+        
+        let INADDR_ANY = in_addr(s_addr: 0)
+
+        var addr = sockaddr_in(
+            sin_len:    __uint8_t(sizeof(sockaddr_in)),
+            sin_family: sa_family_t(AF_INET),
+            sin_port:   htons(port),
+            sin_addr:   INADDR_ANY,
+            sin_zero:   ( 0, 0, 0, 0, 0, 0, 0, 0 )
+        )
+
+        let fd = socket(AF_INET, SOCK_DGRAM, 0) // DGRAM makes it UDP
     
-    override func setUp() {
-        super.setUp()
-    
-        var token: dispatch_once_t = 0
-        func test() {
-            dispatch_once(&token) {
-                let web = WebExample()
-                web.serve()
+        message.withCString { cstr -> Void in
+            withUnsafePointer(&addr) { ptr -> Void in
+                let addrptr = UnsafePointer<sockaddr>(ptr)
+                sendto(fd, cstr, Int(strlen(cstr)), 0,
+                addrptr, socklen_t(addr.sin_len))
             }
         }
     }
+}
+
+var xpector: XCTestExpectation?
+
+
+class unladenTests: XCTestCase {
     
+
+    override func setUp() {
+        super.setUp()
+        WebExample.shared.serve()
+        UdpEchoServer.shared.serve()
+    }
+
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
+    
+    func xtestRest() {
+        
+        let params = ["a":"1", "b":"2"]
+        HttpClient.get(params, url:TEST_SERVER_ADDRESS + FOO, callback:{ status, response in
+            XCTAssert(status == 200)
+        })
+
+        HttpClient.post(params, url:TEST_SERVER_ADDRESS+BAR, callback:{ status, response in
+            XCTAssert(status == 200)
+        })
+        
+        HttpClient.post(params, url:TEST_SERVER_ADDRESS+FOO+BAR, callback:{ status, response in
+            XCTAssert(status == 404)
+        })
+    }
+
+    
+    func testUDP() {
+
+        xpector = expectationWithDescription("longRunningFunction")
+
+        UdpClient.send(TEST_SERVER_ADDRESS, port: UDP_PORT, message: "echo")
+        self.waitForExpectationsWithTimeout(5) { error in
+        }
+    }
+
+    func testSocket() {
+        
+    }
+    
     
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
     
-    func testPerformanceExample() {
+    func xtestPerformanceExample() {
         // This is an example of a performance test case.
         self.measureBlock {
             // Put the code you want to measure the time of here.

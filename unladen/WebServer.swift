@@ -6,7 +6,7 @@ extension String {
     }
 }
 
-class WebServer : TcpServer {
+public class WebServer : TcpServer {
 
     typealias Handler = ([String:String]?) -> (NSData)
     var routes = [String:[String:Handler]]()
@@ -22,7 +22,7 @@ class WebServer : TcpServer {
         self.setRoute(WebServer.POST, route:route, handler:handler)
     }
 
-    init(port:Int, directory:String=".") {
+    init(port:UInt16, directory:String=".") {
         self.directory = directory
         super.init(port:port)
         self.routes[WebServer.GET] = [String:Handler]()

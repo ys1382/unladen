@@ -4,11 +4,12 @@ import Foundation
 
 enum TransportLayer { case UDP, TCP }
 
-class IpServer {
+
+public class IpServer {
 
     let maxNumberOfConnectionsBeforeAccept = Int32(1000)
     let condition = NSCondition()
-    var port:Int
+    var port:UInt16
     var layer:TransportLayer
 
     /// Replacement for FD_ZERO macro
@@ -269,6 +270,8 @@ class IpServer {
         // Bind the socket descriptor to a port
         // ====================================
 
+        print("binding \(self.layer)");
+        
         status = bind(
             socketDescriptor,               // The socket descriptor of the socket to bind
             servinfo.memory.ai_addr,        // Use the servinfo created earlier, this makes it IPv4/IPv6 independant
@@ -451,7 +454,7 @@ class IpServer {
 //        close(socket)
     }
 
-    init(port:Int, layer:TransportLayer) {
+    init(port:UInt16, layer:TransportLayer) {
         self.port = port
         self.layer = layer
     }
@@ -496,16 +499,16 @@ class IpServer {
     }
 }
 
-class TcpServer : IpServer {
+public class TcpServer : IpServer {
 
-    init(port:Int) {
+    init(port:UInt16) {
         super.init(port: port, layer:.TCP)
     }
 }
 
-class UdpServer : IpServer {
+public class UdpServer : IpServer {
 
-    init(port:Int) {
+    init(port:UInt16) {
         super.init(port: port, layer:.UDP)
     }
 }
