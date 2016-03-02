@@ -359,7 +359,7 @@ public class IpServer {
 
         let numOfFd:Int32 = socket + 1
         var readSet:fd_set = fd_set(fds_bits: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
-        var timeout:timeval = timeval(tv_sec: 10, tv_usec: 0)
+        //var timeout:timeval = timeval(tv_sec: 10, tv_usec: 0)
 
         fdSet(socket, set:&readSet)
 
@@ -375,13 +375,13 @@ public class IpServer {
             // Because we only specified 1 FD, we do not need to check on which FD the event was received
             // =====================================================================================
 
-            let status = select(numOfFd, &readSet, nil, nil, &timeout)
+            let status = select(numOfFd, &readSet, nil, nil, nil)
 
             // =====================================================================================
             // In case of a timeout, close the connection
             // =====================================================================================
 
-            if status == 0 {
+            if status == 0 { // shouldn't happen, as timeout is not specified
                 print("client timeout")
                 close(socket)
                 return
@@ -422,6 +422,7 @@ public class IpServer {
                 close(socket)
                 return
             }
+            print("read \(bytesRead) bytes")
 
             // =====================================================================================
             // If the client closed the connection, close our end too
@@ -483,13 +484,9 @@ public class IpServer {
                     self.acceptConnectionRequests(httpSocketDescriptor!)
                 })
             } else {
-            
-                while true {
-                    dispatch_async(acceptQueue, {
-                        self.receiveAndDispatch(httpSocketDescriptor!)
-                    })
-
-                }
+                dispatch_async(acceptQueue, {
+                    self.receiveAndDispatch(httpSocketDescriptor!)
+                })
             }
 
             self.condition.lock()

@@ -108,16 +108,17 @@ public class UdpEchoServer : UdpServer {
     override func serve() {
         dispatch_once(&UdpEchoServer.udpOnce) {
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
-                print("serving");
-                xpector!.fulfill()
                 super.serve()
+                print("serving");
             })
         }
     }
 
     override func processRequest(socket:Int32, data:[Int8], length:Int) {
-        print("udp process request");
+        let str = String.fromCString(UnsafePointer(data))
+        print("udp process request " + str!);
         xpector!.fulfill()
+        print("processed!")
     }
 }
 
@@ -153,16 +154,16 @@ public class UdpClient {
     }
 }
 
-var xpector: XCTestExpectation?
+var xpector: XCTestExpectation? = nil
 
 
 class unladenTests: XCTestCase {
-    
 
     override func setUp() {
         super.setUp()
         WebExample.shared.serve()
         UdpEchoServer.shared.serve()
+        sleep(1)
     }
 
     override func tearDown() {
@@ -192,20 +193,18 @@ class unladenTests: XCTestCase {
         xpector = expectationWithDescription("longRunningFunction")
 
         UdpClient.send(TEST_SERVER_ADDRESS, port: UDP_PORT, message: "echo")
+        print("send echo")
         self.waitForExpectationsWithTimeout(5) { error in
+            print("wait error")
         }
+        print("udp test done")
     }
 
-    func testSocket() {
-        
+    func testZSocket() {
+       
+        print("testSocket")
     }
-    
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-    
+
     func xtestPerformanceExample() {
         // This is an example of a performance test case.
         self.measureBlock {
