@@ -63,11 +63,9 @@ public class WebServer : TcpServer {
         return nil
     }
 
-    override func processRequest(socket:Int32, data:[Int8], length:Int) {
+    override func processRequest(socket:Int32, data:[Int8], length:Int) -> NSData {
         let request = NSString(bytes: data, length:length, encoding: NSUTF8StringEncoding)
-        let response = handleRoute(request! as String)
-        send(socket, response.bytes, response.length, 0)
-        close(socket)
+        return handleRoute(request! as String)
     }
 
     func handleRoute(request:String) -> NSData {
@@ -92,6 +90,7 @@ public class WebServer : TcpServer {
         }
         return httpResponse(200, body:response!)
     }
+    
 
     func printFirstBytes(body:NSData) {
         let count = body.length / sizeof(UInt8)

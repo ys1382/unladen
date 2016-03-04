@@ -11,7 +11,7 @@ let TEST_SERVER_ADDRESS = "127.0.0.1"
 let FOO = "foo"
 let BAR = "bar"
 
-// Define your models like regular Swift classes
+// Realm models
 class Dog: Object {
     dynamic var name = ""
     dynamic var age = 0
@@ -19,7 +19,7 @@ class Dog: Object {
 
 class Person: Object {
     dynamic var name = ""
-    dynamic var picture: NSData? = nil // optionals supported
+    dynamic var picture: NSData? = nil
     let dogs = List<Dog>()
 }
 
@@ -40,7 +40,6 @@ public class WebExample : WebServer {
     override func serve() {
         dispatch_once(&WebExample.webOnce) {
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
-
                 self.serve()
             })
         }
@@ -102,7 +101,7 @@ public class WebExample : WebServer {
 
 public class UdpEchoServer : UdpServer {
     static let shared = UdpEchoServer(port: UDP_PORT)
-
+    
     // start the server, once, in the background thread
     static var udpOnce : dispatch_once_t = 0
     override func serve() {
@@ -113,12 +112,42 @@ public class UdpEchoServer : UdpServer {
             })
         }
     }
-
-    override func processRequest(socket:Int32, data:[Int8], length:Int) {
+    
+    override func processRequest(socket:Int32, data:[Int8], length:Int) -> NSData? {
         let str = String.fromCString(UnsafePointer(data))
         print("udp process request " + str!);
         xpector!.fulfill()
         print("processed!")
+        return (str! + " yourself!").dataUsingEncoding(NSUTF8StringEncoding)
+    }
+}
+
+public class SocketEchoServer : TcpServer {
+    static let shared = SocketEchoServer(port: SKT_PORT)
+    static var conn: Connection?
+
+    // start the server, once, in the background thread
+    static var sktOnce : dispatch_once_t = 0
+    override func serve() {
+        dispatch_once(&SocketEchoServer.sktOnce) {
+            SocketEchoServer.conn = Connection(host: "127.0.0.1", port: SKT_PORT, callback: { data in
+                let str = String.fromCString(UnsafePointer(data))
+                print("socket process request " + str!);
+                xpector!.fulfill()
+                return nil
+            })
+
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), {
+                super.serve()
+                print("socket serving");
+            })
+        }
+    }
+    
+    override func processRequest(socket:Int32, data:[Int8], length:Int) -> NSData? {
+        let str = String.fromCString(UnsafePointer(data))
+        print("socket server process request " + str!);
+        return (str! + " yourself!").dataUsingEncoding(NSUTF8StringEncoding)
     }
 }
 
@@ -157,12 +186,19 @@ public class UdpClient {
 var xpector: XCTestExpectation? = nil
 
 
+// todo: make extensions to NSData
+func string2data(string:String) -> NSData? {
+    return string.dataUsingEncoding(NSUTF8StringEncoding)
+}
+
 class unladenTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        xpector = expectationWithDescription("longRunningFunction")
         WebExample.shared.serve()
         UdpEchoServer.shared.serve()
+        SocketEchoServer.shared.serve()
         sleep(1)
     }
 
@@ -188,22 +224,21 @@ class unladenTests: XCTestCase {
     }
 
     
-    func testUDP() {
-
-        xpector = expectationWithDescription("longRunningFunction")
+    func xtestUDP() {
 
         UdpClient.send(TEST_SERVER_ADDRESS, port: UDP_PORT, message: "echo")
-        print("send echo")
-        self.waitForExpectationsWithTimeout(5) { error in
-            print("wait error")
-        }
         print("udp test done")
     }
 
-    func testZSocket() {
+    func testSocket() {
        
-        print("testSocket")
-    }
+        SocketEchoServer.conn!.connect()
+        SocketEchoServer.conn!.send(string2data("hi")!)
+
+        self.waitForExpectationsWithTimeout(5) { error in
+            print("wait error")
+        }
+}
 
     func xtestPerformanceExample() {
         // This is an example of a performance test case.

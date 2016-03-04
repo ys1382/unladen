@@ -441,18 +441,17 @@ public class IpServer {
             requestLength = requestLength + bytesRead
 
             if bytesRead < bufferSize { // all request bytes were read
-//                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), {
-                    self.processRequest(socket, data:requestBuffer, length:bytesRead)
-//                })
-                return
+                if let response = self.processRequest(socket, data:requestBuffer, length:bytesRead) {
+                    send(socket, response.bytes, response.length, 0)
+                }
             }
         }
     }
 
-    func processRequest(socket:Int32, data:[Int8], length:Int) {
+    func processRequest(socket:Int32, data:[Int8], length:Int) -> NSData? {
         let request = NSString(bytes: data, length:length, encoding: NSUTF8StringEncoding)
-        print("received request: \(request)")
-//        close(socket)
+        print("TCPserver.processRequest \(request)")
+        return nil
     }
 
     init(port:UInt16, layer:TransportLayer) {
