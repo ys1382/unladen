@@ -195,11 +195,10 @@ class unladenTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        xpector = expectationWithDescription("longRunningFunction")
         WebExample.shared.serve()
         UdpEchoServer.shared.serve()
         SocketEchoServer.shared.serve()
-        sleep(1)
+        sleep(1) // let the servers start before sending them data
     }
 
     override func tearDown() {
@@ -207,7 +206,7 @@ class unladenTests: XCTestCase {
         super.tearDown()
     }
     
-    func xtestRest() {
+    func testRest() {
         
         let params = ["a":"1", "b":"2"]
         HttpClient.get(params, url:TEST_SERVER_ADDRESS + FOO, callback:{ status, response in
@@ -224,10 +223,14 @@ class unladenTests: XCTestCase {
     }
 
     
-    func xtestUDP() {
+    func testUDP() {
 
         UdpClient.send(TEST_SERVER_ADDRESS, port: UDP_PORT, message: "echo")
-        print("udp test done")
+
+        xpector = expectationWithDescription("wait for UDP")
+        self.waitForExpectationsWithTimeout(5) { error in
+            print("wait error")
+        }
     }
 
     func testSocket() {
@@ -235,6 +238,7 @@ class unladenTests: XCTestCase {
         SocketEchoServer.conn!.connect()
         SocketEchoServer.conn!.send(string2data("hi")!)
 
+        xpector = expectationWithDescription("wait for socket")
         self.waitForExpectationsWithTimeout(5) { error in
             print("wait error")
         }
